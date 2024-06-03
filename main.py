@@ -1,17 +1,27 @@
 import os
 import requests
+from bs4 import BeautifulSoup
+from pathvalidate import sanitize_filename
 
 
-
-def download_books(path, book_id):
-    os.makedirs(path, exist_ok=True)
-    url_template = 'https://tululu.org/txt.php?id={}/'.format(book_id)
-    response = requests.get(url_template)
-    check_for_redirect(response)
+def get_book_name_with_id(book_id, url):
+    response = requests.get(url)
     response.raise_for_status()
-    patch_template = f'{path}/id{book_id}.txt'
-    with open(patch_template, 'wb') as file:
+    soup = BeautifulSoup(response.text, 'lxml')
+    title_tag = soup.find('h1')
+    book_name = title_tag.text.split('::', maxsplit=1)[0].strip()
+    return f'{book_id}. {book_name}'
+
+
+def download_text(url, filename, folder='books/'):
+    os.makedirs(folder, exist_ok=True)
+    response = requests.get(url)
+    response.raise_for_status()
+    check_for_redirect(response)
+    path = os.path.join(folder, f'{sanitize_filename(filename)}.txt')
+    with open(path, 'wb') as file:
         file.write(response.content)
+    return path
 
 
 def check_for_redirect(response):
@@ -20,18 +30,17 @@ def check_for_redirect(response):
 
 
 def main():
-    path = 'books'
-    books_id = 1
-    os.makedirs(path, exist_ok=True)
-    while books_id <= 10:
+    book_id = 1
+    while book_id <= 10:
+        template_url_for_download = 'https://tululu.org/txt.php?id={}'.format(book_id)
+        template_url_for_title = 'https://tululu.org/b{}/'.format(book_id)
         try:
-            download_books(path, books_id)
+            filename = get_book_name_with_id(book_id, template_url_for_title)
+            download_text(template_url_for_download, filename, folder='books/')
         except requests.exceptions.HTTPError:
             print('перенаправление')
-        books_id += 1
+        book_id += 1
 
 
 if __name__ == '__main__':
     main()
-
-
