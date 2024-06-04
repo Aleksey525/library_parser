@@ -1,5 +1,6 @@
 import os
 import requests
+import argparse
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
@@ -56,7 +57,6 @@ def download_image(url, folder='images/'):
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url)
     response.raise_for_status()
-    check_for_redirect(response)
     filename = get_file_name(url)
     path = os.path.join(folder, filename)
     with open(path, 'wb') as file:
@@ -64,8 +64,14 @@ def download_image(url, folder='images/'):
 
 
 def main():
-    book_id = 1
-    while book_id <= 10:
+    parser = argparse.ArgumentParser(
+        description='Скрипт для скачивания книг с https://tululu.org/'
+    )
+    parser.add_argument('start_id', default=1, type=int, help='start book id')
+    parser.add_argument('end_id', default=1, type=int, help='end book id')
+    args = parser.parse_args()
+    book_id = args.start_id
+    while book_id <= args.end_id:
         template_url_for_download = \
             'https://tululu.org/txt.php?id={}'.format(book_id)
         template_url_for_page = 'https://tululu.org/b{}/'.format(book_id)
