@@ -67,8 +67,8 @@ def main():
     parser = argparse.ArgumentParser(
         description='Скрипт для скачивания книг с https://tululu.org/'
     )
-    parser.add_argument('start_id', default=1, type=int, help='start book id')
-    parser.add_argument('end_id', default=1, type=int, help='end book id')
+    parser.add_argument('--start_id', default=1, type=int, help='start book id')
+    parser.add_argument('--end_id', default=10, type=int, help='end book id')
     args = parser.parse_args()
     book_id = args.start_id
     while book_id <= args.end_id:
