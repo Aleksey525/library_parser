@@ -6,6 +6,21 @@ from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
 
 
+def get_comments(url, filename):
+    response = requests.get(url)
+    response.raise_for_status()
+    check_for_redirect(response)
+    soup = BeautifulSoup(response.text, 'lxml')
+    comments = soup.find_all('div', 'span', class_='texts')
+    book_name = filename
+    print(book_name)
+    if comments:
+        for comment in comments:
+            print(comment.text.split(')')[-1])
+    else:
+        print()
+
+
 def get_file_name(file_link):
     splited_link = urlsplit(file_link)
     file_path = unquote(splited_link.path)
@@ -70,6 +85,7 @@ def main():
             download_text(template_url_for_download, filename)
             image_url = get_image_url(template_url_for_page)
             download_image(image_url)
+            get_comments(template_url_for_page, filename)
         except requests.exceptions.HTTPError:
             pass
         book_id += 1
