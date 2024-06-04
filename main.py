@@ -6,6 +6,17 @@ from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
 
 
+def get_genre(url, filename):
+    response = requests.get(url)
+    response.raise_for_status()
+    check_for_redirect(response)
+    soup = BeautifulSoup(response.text, 'lxml')
+    genres = soup.find('span', class_='d_book').find_all('a')
+    book_name = filename
+    print(f'Заголовок: {book_name}')
+    print([genre.text for genre in genres])
+
+
 def get_comments(url, filename):
     response = requests.get(url)
     response.raise_for_status()
@@ -82,10 +93,11 @@ def main():
         template_url_for_page = 'https://tululu.org/b{}/'.format(book_id)
         try:
             filename = get_book_name_with_id(book_id, template_url_for_page)
-            download_text(template_url_for_download, filename)
-            image_url = get_image_url(template_url_for_page)
-            download_image(image_url)
-            get_comments(template_url_for_page, filename)
+            # download_text(template_url_for_download, filename)
+            # image_url = get_image_url(template_url_for_page)
+            # download_image(image_url)
+            # get_comments(template_url_for_page, filename)
+            get_genre(template_url_for_page, filename)
         except requests.exceptions.HTTPError:
             pass
         book_id += 1
