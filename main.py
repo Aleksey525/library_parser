@@ -6,30 +6,27 @@ from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
 
 
-def get_genre(url, filename):
-    response = requests.get(url)
+def parse_book_page(page_url):
+    response = requests.get(page_url)
     response.raise_for_status()
     check_for_redirect(response)
     soup = BeautifulSoup(response.text, 'lxml')
+    tag_title = soup.find('h1')
+    book_title = tag_title.text.split('::', maxsplit=1)[0].strip()
+    author = tag_title.text.split('::', maxsplit=1)[1].strip()
     genres = soup.find('span', class_='d_book').find_all('a')
-    book_name = filename
-    print(f'Заголовок: {book_name}')
-    print([genre.text for genre in genres])
-
-
-def get_comments(url, filename):
-    response = requests.get(url)
-    response.raise_for_status()
-    check_for_redirect(response)
-    soup = BeautifulSoup(response.text, 'lxml')
+    image_link = soup.find('div', class_='bookimage').find('img')['src']
+    complete_image_url = urljoin('https://tululu.org/', image_link)
     comments = soup.find_all('div', 'span', class_='texts')
-    book_name = filename
-    print(book_name)
-    if comments:
-        for comment in comments:
-            print(comment.text.split(')')[-1])
-    else:
-        print()
+
+    parse = {'name': book_title,
+             'author': author,
+             'genre': [genre.text for genre in genres],
+             'cover': complete_image_url,
+             'comments': [comment.text.split(')')[-1] for comment in comments]
+             }
+
+    return parse
 
 
 def get_file_name(file_link):
@@ -40,24 +37,9 @@ def get_file_name(file_link):
     return file_name
 
 
-def get_book_name_with_id(book_id, url):
-    response = requests.get(url)
-    response.raise_for_status()
-    check_for_redirect(response)
-    soup = BeautifulSoup(response.text, 'lxml')
-    title_tag = soup.find('h1')
-    book_name = title_tag.text.split('::', maxsplit=1)[0].strip()
-    return f'{book_id}. {book_name}'
-
-
-def get_image_url(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    check_for_redirect(response)
-    soup = BeautifulSoup(response.text, 'lxml')
-    image_link = soup.find('div', class_='bookimage').find('img')['src']
-    complete_image_url = urljoin('https://tululu.org/', image_link)
-    return complete_image_url
+def check_for_redirect(response):
+    if response.history:
+        raise requests.exceptions.HTTPError
 
 
 def download_text(url, filename, folder='books/'):
@@ -81,25 +63,20 @@ def download_image(url, folder='images/'):
         file.write(response.content)
 
 
-def check_for_redirect(response):
-    if response.history:
-        raise requests.exceptions.HTTPError
-
-
 def main():
     book_id = 1
     while book_id <= 10:
-        template_url_for_download = 'https://tululu.org/txt.php?id={}'.format(book_id)
+        template_url_for_download = \
+            'https://tululu.org/txt.php?id={}'.format(book_id)
         template_url_for_page = 'https://tululu.org/b{}/'.format(book_id)
         try:
-            filename = get_book_name_with_id(book_id, template_url_for_page)
-            # download_text(template_url_for_download, filename)
-            # image_url = get_image_url(template_url_for_page)
-            # download_image(image_url)
-            # get_comments(template_url_for_page, filename)
-            get_genre(template_url_for_page, filename)
+            parse_result = parse_book_page(template_url_for_page)
+            filename = f"{book_id}. {parse_result['name']}"
+            download_text(template_url_for_download, filename)
+            image_url = parse_result['cover']
+            download_image(image_url)
         except requests.exceptions.HTTPError:
-            pass
+            print(f'Книга с id{book_id} не существует')
         book_id += 1
 
 
