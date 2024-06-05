@@ -14,7 +14,7 @@ def parse_book_page(response):
     author = tag_title.text.split('::', maxsplit=1)[1].strip()
     genres = soup.find('span', class_='d_book').find_all('a')
     image_link = soup.find('div', class_='bookimage').find('img')['src']
-    complete_image_url = urljoin('https://tululu.org/', image_link)
+    complete_image_url = urljoin(response.url, image_link)
     comments = soup.find_all('div', 'span', class_='texts')
 
     parse_result = {'name': book_title,
@@ -93,3 +93,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
