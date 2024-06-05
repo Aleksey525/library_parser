@@ -7,10 +7,7 @@ from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
 
 
-def parse_book_page(page_url):
-    response = requests.get(page_url)
-    response.raise_for_status()
-    check_for_redirect(response)
+def parse_book_page(response):
     soup = BeautifulSoup(response.text, 'lxml')
     tag_title = soup.find('h1')
     book_title = tag_title.text.split('::', maxsplit=1)[0].strip()
@@ -30,6 +27,13 @@ def parse_book_page(page_url):
     return parse_result
 
 
+def get_page(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    check_for_redirect(response)
+    return response
+
+
 def get_file_name(file_link):
     splited_link = urlsplit(file_link)
     file_path = unquote(splited_link.path)
@@ -46,7 +50,6 @@ def check_for_redirect(response):
 def download_text(url, filename, params, folder='books/'):
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, params=params)
-    print(response.url)
     response.raise_for_status()
     check_for_redirect(response)
     path = os.path.join(folder, f'{sanitize_filename(filename)}.txt')
@@ -77,7 +80,8 @@ def main():
         template_url_for_download = 'https://tululu.org/txt.php'
         template_url_for_page = 'https://tululu.org/b{}/'.format(book_id)
         try:
-            parse_result = parse_book_page(template_url_for_page)
+            response = get_page(template_url_for_page)
+            parse_result = parse_book_page(response)
             filename = f"{book_id}. {parse_result['name']}"
             download_text(template_url_for_download, filename, params)
             image_url = parse_result['cover']
