@@ -20,14 +20,14 @@ def parse_book_page(page_url):
     complete_image_url = urljoin('https://tululu.org/', image_link)
     comments = soup.find_all('div', 'span', class_='texts')
 
-    parse = {'name': book_title,
+    parse_result = {'name': book_title,
              'author': author,
              'genre': [genre.text for genre in genres],
              'cover': complete_image_url,
              'comments': [comment.text.split(')')[-1] for comment in comments]
              }
 
-    return parse
+    return parse_result
 
 
 def get_file_name(file_link):
