@@ -43,9 +43,10 @@ def check_for_redirect(response):
         raise requests.exceptions.HTTPError
 
 
-def download_text(url, filename, folder='books/'):
+def download_text(url, filename, params, folder='books/'):
     os.makedirs(folder, exist_ok=True)
-    response = requests.get(url)
+    response = requests.get(url, params=params)
+    print(response.url)
     response.raise_for_status()
     check_for_redirect(response)
     path = os.path.join(folder, f'{sanitize_filename(filename)}.txt')
@@ -72,13 +73,13 @@ def main():
     args = parser.parse_args()
     book_id = args.start_id
     while book_id <= args.end_id:
-        template_url_for_download = \
-            'https://tululu.org/txt.php?id={}'.format(book_id)
+        params = {'id': book_id}
+        template_url_for_download = 'https://tululu.org/txt.php'
         template_url_for_page = 'https://tululu.org/b{}/'.format(book_id)
         try:
             parse_result = parse_book_page(template_url_for_page)
             filename = f"{book_id}. {parse_result['name']}"
-            download_text(template_url_for_download, filename)
+            download_text(template_url_for_download, filename, params)
             image_url = parse_result['cover']
             download_image(image_url)
         except requests.exceptions.HTTPError:
