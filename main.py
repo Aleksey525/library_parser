@@ -17,12 +17,13 @@ def parse_book_page(response):
     complete_image_url = urljoin(response.url, image_link)
     comments = soup.find_all('div', 'span', class_='texts')
 
-    parse_result = {'name': book_title,
-             'author': author,
-             'genre': [genre.text for genre in genres],
-             'cover': complete_image_url,
-             'comments': [comment.text.split(')')[-1] for comment in comments]
-             }
+    parse_result = {
+        'name': book_title,
+        'author': author,
+        'genre': [genre.text for genre in genres],
+        'cover': complete_image_url,
+        'comments': [comment.text.split(')')[-1] for comment in comments]
+    }
 
     return parse_result
 
