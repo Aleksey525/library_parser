@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
+import time
 
 
 def parse_book_page(response):
@@ -76,6 +77,7 @@ def main():
     parser.add_argument('--end_id', default=10, type=int, help='end book id')
     args = parser.parse_args()
     book_id = args.start_id
+    counter_errors = 0
     while book_id <= args.end_id:
         params = {'id': book_id}
         template_url_for_download = 'https://tululu.org/txt.php'
@@ -89,10 +91,14 @@ def main():
             download_image(image_url)
         except requests.exceptions.HTTPError:
             print(f'Книга с id{book_id} не существует')
+        except requests.exceptions.ConnectionError:
+            counter_errors += 1
+            print(f'Ошибка подключения {counter_errors}')
+            if counter_errors > 1:
+                time.sleep(10)
+                continue
         book_id += 1
 
 
 if __name__ == '__main__':
     main()
-
-
