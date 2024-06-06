@@ -18,7 +18,7 @@ def parse_book_page(response):
     complete_image_url = urljoin(response.url, image_link)
     comments = soup.find_all('div', 'span', class_='texts')
 
-    book_information = {
+    book = {
         'name': book_title,
         'author': author,
         'genre': [genre.text for genre in genres],
@@ -26,7 +26,7 @@ def parse_book_page(response):
         'comments': [comment.text.split(')')[-1] for comment in comments]
     }
 
-    return book_information
+    return book
 
 
 def get_page(url):
@@ -84,10 +84,10 @@ def main():
         template_url_for_page = 'https://tululu.org/b{}/'.format(book_id)
         try:
             response = get_page(template_url_for_page)
-            book_information = parse_book_page(response)
-            filename = f"{book_id}. {book_information['name']}"
+            book = parse_book_page(response)
+            filename = f"{book_id}. {book['name']}"
             download_text(template_url_for_download, filename, params)
-            image_url = book_information['cover']
+            image_url = book['cover']
             download_image(image_url)
         except requests.exceptions.HTTPError:
             print(f'Книга с id{book_id} не существует')
