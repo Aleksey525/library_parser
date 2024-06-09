@@ -98,9 +98,29 @@ def download_image(url, folder='images/'):
         file.write(response.content)
 
 
+def get_number_of_pages():
+    url = 'https://tululu.org/l55/1'
+    response = get_page(url)
+    soup = BeautifulSoup(response.text, 'lxml')
+    link_selector = 'a.npage'
+    links_pages = soup.select(link_selector)
+    numbers_lst = [number.text for number in links_pages]
+    return numbers_lst[-1]
+
+
 def main():
+    parser = argparse.ArgumentParser(
+        description='Скрипт для скачивания книг с https://tululu.org/'
+    )
+    parser.add_argument('--start_page', default=1, type=int, help='start page')
+    parser.add_argument('--end_page', default=10, type=int, help='end page')
+    args = parser.parse_args()
+    start_page = args.start_page
+    end_page = args.end_page
+    if not end_page:
+        end_page = int(get_number_of_pages()) + 1
     counter_errors = 0
-    for numb in range(1, 2):
+    for numb in range(start_page, end_page):
         template_url = 'https://tululu.org/l55/{}'.format(numb)
         response = requests.get(template_url)
         all_links = get_all_cards(response)
@@ -128,3 +148,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
