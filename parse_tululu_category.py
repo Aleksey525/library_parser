@@ -11,20 +11,24 @@ import json
 
 def parse_book_page(response):
     soup = BeautifulSoup(response.text, 'lxml')
-    tag_title = soup.find('h1')
-    book_title = tag_title.text.split('::', maxsplit=1)[0].strip()
-    author = tag_title.text.split('::', maxsplit=1)[1].strip()
-    genres = soup.find('span', class_='d_book').find_all('a')
-    image_link = soup.find('div', class_='bookimage').find('img')['src']
+    title_selector = 'h1'
+    tag_title = soup.select_one(title_selector)
+    book_title = tag_title.text.split('::')[0].strip()
+    author = tag_title.text.split('::')[1].strip()
+    genres_selector = 'span.d_book a'
+    genres = soup.select(genres_selector)
+    image_selector = 'div.bookimage img'
+    image_link = soup.select_one(image_selector)['src']
     complete_image_url = urljoin(response.url, image_link)
-    comments = soup.find_all('div', 'span', class_='texts')
+    comments_selectors = 'div.texts span.black'
+    comments = soup.select(comments_selectors)
 
     book = {
         'name': book_title,
         'author': author,
         'genre': [genre.text for genre in genres],
         'cover': complete_image_url,
-        'comments': [comment.text.split(')')[-1] for comment in comments]
+        'comments': [comment.text for comment in comments]
     }
 
     return book
@@ -52,10 +56,10 @@ def get_book_id(page_url):
 
 def get_all_cards(response):
     soup = BeautifulSoup(response.text, 'lxml')
-    all_cards = soup.find_all(class_='d_book')
+    all_cards = soup.select('table.d_book')
     all_links = []
     for card in all_cards:
-        link = card.find('a')['href']
+        link = card.select_one('a')['href']
         complete_link = urljoin(response.url, link)
         all_links.append(complete_link)
     return all_links
@@ -96,7 +100,7 @@ def download_image(url, folder='images/'):
 
 def main():
     counter_errors = 0
-    for numb in range(1, 3):
+    for numb in range(1, 2):
         template_url = 'https://tululu.org/l55/{}'.format(numb)
         response = requests.get(template_url)
         all_links = get_all_cards(response)
