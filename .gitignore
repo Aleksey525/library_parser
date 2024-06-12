@@ -140,3 +140,4 @@ cython_debug/
 media/
 books/
 images/
+book.json
