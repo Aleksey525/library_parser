@@ -34,8 +34,9 @@ def parse_book_page(response):
     return book
 
 
-def create_json(book):
-    with open('book.json', 'a+', encoding='utf-8') as file:
+def create_json(book, folder=None):
+    complete_path = os.path.join(folder, 'book.json')
+    with open(complete_path, 'a+', encoding='utf-8') as file:
         json.dump(book, file, ensure_ascii=False, indent=4)
         file.write('\n')
 
@@ -78,23 +79,29 @@ def check_for_redirect(response):
         raise requests.exceptions.HTTPError
 
 
-def download_text(url, filename, params, folder='books/'):
-    os.makedirs(folder, exist_ok=True)
+def download_text(url, filename, params, book, path=None):
+    folder = 'books/'
+    new_path = os.path.join(path, folder)
+    os.makedirs(new_path, exist_ok=True)
     response = requests.get(url, params=params)
     response.raise_for_status()
     check_for_redirect(response)
-    path = os.path.join(folder, f'{sanitize_filename(filename)}.txt')
-    with open(path, 'wb') as file:
+    complete_path = os.path.join(new_path, f'{sanitize_filename(filename)}.txt')
+    book['book_path'] = complete_path
+    with open(complete_path, 'wb') as file:
         file.write(response.content)
 
 
-def download_image(url, folder='images/'):
-    os.makedirs(folder, exist_ok=True)
+def download_image(url, book, path=None):
+    folder = 'images/'
+    new_path = os.path.join(path, folder)
+    os.makedirs(new_path, exist_ok=True)
     response = requests.get(url)
     response.raise_for_status()
     filename = get_file_name(url)
-    path = os.path.join(folder, filename)
-    with open(path, 'wb') as file:
+    complete_path = os.path.join(new_path, filename)
+    book['img_src'] = complete_path
+    with open(complete_path, 'wb') as file:
         file.write(response.content)
 
 
@@ -113,14 +120,20 @@ def main():
         description='Скрипт для скачивания книг с https://tululu.org/'
     )
     parser.add_argument('--start_page', default=1, type=int, help='start page')
-    parser.add_argument('--end_page', default=10, type=int, help='end page')
+    parser.add_argument('--end_page', type=int, help='end page')
+    parser.add_argument('--dest_folder', default='', type=str, help='dest_folder')
+    parser.add_argument('--skip_img', default=False, action='store_const', const=True, help='skip_image')
+    parser.add_argument('--skip_txt', default=False, action='store_const', const=True, help='skip_text')
     args = parser.parse_args()
+    path = args.dest_folder
+    if path:
+        os.makedirs(path, exist_ok=True)
     start_page = args.start_page
     end_page = args.end_page
     if not end_page:
-        end_page = int(get_number_of_pages()) + 1
+        end_page = int(get_number_of_pages())
     counter_errors = 0
-    for numb in range(start_page, end_page):
+    for numb in range(start_page, end_page + 1):
         template_url = 'https://tululu.org/l55/{}'.format(numb)
         response = requests.get(template_url)
         all_links = get_all_cards(response)
@@ -133,9 +146,11 @@ def main():
                 book_id = get_book_id(link)
                 params = {'id': book_id}
                 filename = f"{book_id}-ая книга. {book['name']}"
-                download_image(image_url)
-                download_text(template_url_for_download, filename, params)
-                create_json(book)
+                if not args.skip_img:
+                    download_image(image_url, book, path)
+                if not args.skip_txt:
+                    download_text(template_url_for_download, filename, params, book, path)
+                create_json(book, path)
             except requests.exceptions.HTTPError:
                 print(f'Книга c id {book_id} не существует')
             except requests.exceptions.ConnectionError:
@@ -148,9 +163,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
