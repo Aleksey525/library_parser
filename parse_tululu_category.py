@@ -131,9 +131,9 @@ def main():
     start_page = args.start_page
     end_page = args.end_page
     if not end_page:
-        end_page = int(get_number_of_pages())
+        end_page = int(get_number_of_pages()) + 1
     counter_errors = 0
-    for numb in range(start_page, end_page + 1):
+    for numb in range(start_page, end_page):
         template_url = 'https://tululu.org/l55/{}'.format(numb)
         response = requests.get(template_url)
         all_links = get_all_cards(response)
