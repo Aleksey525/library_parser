@@ -4,9 +4,18 @@ import argparse
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
-from download_content import get_page, parse_book_page, download_text, download_image
+from download_content import get_page, parse_book_page, download_text, download_image, check_for_redirect
 import time
 import json
+
+
+class ReDirectException(Exception):
+    pass
+
+
+def check_for_redirect_custom(response):
+    if response.history:
+        raise ReDirectException
 
 
 def create_json(book, folder=None):
@@ -66,10 +75,13 @@ def main():
         try:
             template_url = 'https://tululu.org/l55/{}'.format(numb)
             response = requests.get(template_url)
+            check_for_redirect_custom(response)
             response.raise_for_status()
             all_links = get_all_cards(response)
         except requests.exceptions.HTTPError:
             print('Ошибка HTTP')
+        except ReDirectException:
+            print('Произошло перенаправление')
         else:
             for link in all_links:
                 try:
