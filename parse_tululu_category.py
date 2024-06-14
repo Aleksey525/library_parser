@@ -32,7 +32,7 @@ def get_book_id(page_url):
     return book_id
 
 
-def get_all_cards(response):
+def get_all_links(response):
     soup = BeautifulSoup(response.text, 'lxml')
     all_cards = soup.select('table.d_book')
     all_links = []
@@ -77,7 +77,7 @@ def main():
             response = requests.get(template_url)
             check_for_redirect_custom(response)
             response.raise_for_status()
-            all_links = get_all_cards(response)
+            all_links = get_all_links(response)
         except requests.exceptions.HTTPError:
             print('Ошибка HTTP')
         except ReDirectException:
