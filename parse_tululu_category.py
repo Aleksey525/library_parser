@@ -122,10 +122,11 @@ def main():
     parser.add_argument('--start_page', default=1, type=int, help='start page')
     parser.add_argument('--end_page', type=int, help='end page')
     parser.add_argument('--dest_folder', default='', type=str, help='dest_folder')
-    parser.add_argument('--skip_img', default=False, action='store_const', const=True, help='skip_image')
-    parser.add_argument('--skip_txt', default=False, action='store_const', const=True, help='skip_text')
+    parser.add_argument('--skip_img', action='store_true', help='skip_image')
+    parser.add_argument('--skip_txt', action='store_true', help='skip_text')
     args = parser.parse_args()
     path = args.dest_folder
+    print(args.skip_img)
     if path:
         os.makedirs(path, exist_ok=True)
     start_page = args.start_page
