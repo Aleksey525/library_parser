@@ -1,10 +1,6 @@
 import os
 import requests
 import argparse
-from bs4 import BeautifulSoup
-from pathvalidate import sanitize_filename
-from urllib.parse import urljoin
-from urllib.parse import urlsplit, unquote
 from download_content import get_page, parse_book_page, download_text, download_image
 import time
 
