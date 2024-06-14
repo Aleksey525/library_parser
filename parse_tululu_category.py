@@ -63,31 +63,36 @@ def main():
         end_page = int(get_number_of_pages()) + 1
     counter_errors = 0
     for numb in range(start_page, end_page):
-        template_url = 'https://tululu.org/l55/{}'.format(numb)
-        response = requests.get(template_url)
-        all_links = get_all_cards(response)
-        for link in all_links:
-            try:
-                template_url_for_download = 'https://tululu.org/txt.php'
-                response = get_page(link)
-                book = parse_book_page(response)
-                image_url = book['cover']
-                book_id = get_book_id(link)
-                params = {'id': book_id}
-                filename = f"{book_id}-ая книга. {book['name']}"
-                if not args.skip_img:
-                    download_image(image_url, book, path)
-                if not args.skip_txt:
-                    download_text(template_url_for_download, filename, params, book, path)
-                create_json(book, path)
-            except requests.exceptions.HTTPError:
-                print(f'Книга c id {book_id} не существует')
-            except requests.exceptions.ConnectionError:
-                counter_errors += 1
-                print(f'Ошибка подключения {counter_errors}')
-                if counter_errors > 1:
-                    time.sleep(10)
-                    continue
+        try:
+            template_url = 'https://tululu.org/l55/{}'.format(numb)
+            response = requests.get(template_url)
+            response.raise_for_status()
+            all_links = get_all_cards(response)
+        except requests.exceptions.HTTPError:
+            print('Ошибка HTTP')
+        else:
+            for link in all_links:
+                try:
+                    template_url_for_download = 'https://tululu.org/txt.php'
+                    response = get_page(link)
+                    book = parse_book_page(response)
+                    image_url = book['cover']
+                    book_id = get_book_id(link)
+                    params = {'id': book_id}
+                    filename = f"{book_id}-ая книга. {book['name']}"
+                    if not args.skip_img:
+                        download_image(image_url, book, path)
+                    if not args.skip_txt:
+                        download_text(template_url_for_download, filename, params, book, path)
+                    create_json(book, path)
+                except requests.exceptions.HTTPError:
+                    print(f'Книга c id {book_id} не существует')
+                except requests.exceptions.ConnectionError:
+                    counter_errors += 1
+                    print(f'Ошибка подключения {counter_errors}')
+                    if counter_errors > 1:
+                        time.sleep(10)
+                        continue
 
 
 if __name__ == '__main__':
