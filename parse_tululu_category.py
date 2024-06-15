@@ -85,6 +85,12 @@ def main():
             print('Ошибка HTTP')
         except ReDirectException:
             print('Произошло перенаправление')
+        except requests.exceptions.ConnectionError:
+            counter_errors += 1
+            print(f'Ошибка подключения {counter_errors}')
+            if counter_errors > 1:
+                time.sleep(5)
+                continue
         else:
             for link in all_links:
                 try:
@@ -106,7 +112,7 @@ def main():
                     counter_errors += 1
                     print(f'Ошибка подключения {counter_errors}')
                     if counter_errors > 1:
-                        time.sleep(10)
+                        time.sleep(5)
                         continue
 
 
