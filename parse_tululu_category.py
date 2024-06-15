@@ -52,7 +52,8 @@ def get_number_of_pages():
     link_selector = 'a.npage'
     links_pages = soup.select(link_selector)
     numbers_lst = [number.text for number in links_pages]
-    return numbers_lst[-1]
+    number_of_pages = int(numbers_lst[-1])
+    return number_of_pages
 
 
 def main():
@@ -71,7 +72,8 @@ def main():
     start_page = args.start_page
     end_page = args.end_page
     if not end_page:
-        end_page = int(get_number_of_pages()) + 1
+        number_of_pages = get_number_of_pages()
+        end_page = number_of_pages + 1
     counter_errors = 0
     for numb in range(start_page, end_page):
         try:
