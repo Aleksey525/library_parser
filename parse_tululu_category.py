@@ -78,9 +78,8 @@ def main():
     for numb in range(start_page, end_page):
         try:
             template_url = 'https://tululu.org/l55/{}'.format(numb)
-            response = requests.get(template_url)
+            response = get_page(template_url)
             check_for_redirect_custom(response)
-            response.raise_for_status()
             all_links = get_all_links(response)
         except requests.exceptions.HTTPError:
             print('Ошибка HTTP')
