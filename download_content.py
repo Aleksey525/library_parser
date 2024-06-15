@@ -1,9 +1,10 @@
 import os
-import requests
-from bs4 import BeautifulSoup
-from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
+
+from bs4 import BeautifulSoup
+from pathvalidate import sanitize_filename
+import requests
 
 
 def get_page(url):

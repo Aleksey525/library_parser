@@ -1,8 +1,10 @@
-import os
-import requests
 import argparse
-from download_content import get_page, parse_book_page, download_text, download_image
+import os
 import time
+
+import requests
+
+from download_content import download_image, download_text, get_page, parse_book_page
 
 
 def main():

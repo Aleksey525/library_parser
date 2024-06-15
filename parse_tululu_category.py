@@ -1,12 +1,14 @@
-import os
-import requests
 import argparse
-from bs4 import BeautifulSoup
+import json
+import os
+import time
 from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
-from download_content import get_page, parse_book_page, download_text, download_image, check_for_redirect
-import time
-import json
+
+from bs4 import BeautifulSoup
+import requests
+
+from download_content import download_image, download_text, get_page, parse_book_page
 
 
 class ReDirectException(Exception):
