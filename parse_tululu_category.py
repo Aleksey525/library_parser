@@ -11,15 +11,6 @@ import requests
 from download_content import download_image, download_text, get_page, parse_book_page
 
 
-class ReDirectException(Exception):
-    pass
-
-
-def check_for_redirect_custom(response):
-    if response.history:
-        raise ReDirectException
-
-
 def create_json(book, folder=None):
     complete_path = os.path.join(folder, 'book.json')
     with open(complete_path, 'a+', encoding='utf-8') as file:
@@ -80,12 +71,9 @@ def main():
         try:
             template_url = 'https://tululu.org/l55/{}'.format(numb)
             response = get_page(template_url)
-            check_for_redirect_custom(response)
             all_links = get_all_links(response)
         except requests.exceptions.HTTPError:
             print('Ошибка HTTP')
-        except ReDirectException:
-            print('Произошло перенаправление')
         except requests.exceptions.ConnectionError:
             counter_errors += 1
             print(f'Ошибка подключения {counter_errors}')
