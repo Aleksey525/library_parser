@@ -75,7 +75,7 @@ def main():
         number_of_pages = get_number_of_pages()
         end_page = number_of_pages + 1
     counter_errors = 0
-    book_lst = []
+    books = []
     for numb in range(start_page, end_page):
         try:
             template_url = 'https://tululu.org/l55/{}'.format(numb)
@@ -106,7 +106,7 @@ def main():
                         download_image(image_url, book, path)
                     if not args.skip_txt:
                         download_text(template_url_for_download, filename, params, book, path)
-                    book_lst.append(book)
+                    books.append(book)
                 except requests.exceptions.HTTPError:
                     print(f'Книга c id {book_id} не существует')
                 except requests.exceptions.ConnectionError:
@@ -115,7 +115,7 @@ def main():
                     if counter_errors > 1:
                         time.sleep(5)
                         continue
-    create_json(book_lst, path)
+    create_json(books, path)
 
 
 if __name__ == '__main__':
