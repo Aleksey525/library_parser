@@ -89,7 +89,8 @@ def main():
                     image_url = book['cover']
                     book_id = get_book_id(link)
                     params = {'id': book_id}
-                    filename = f"{book_id}-ая книга. {book['name']}"
+                    filename = f"{book_id}_{book['name']}"
+                    filename = filename.replace(' ', '_')
                     if not args.skip_img:
                         download_image(image_url, book, path)
                     if not args.skip_txt:
